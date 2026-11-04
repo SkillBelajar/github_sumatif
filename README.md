@@ -2,7 +2,7 @@
 
 **Aplikasi Asesmen Digital Formatif & Sumatif per Tujuan Pembelajaran — Kurikulum Merdeka**
 
-![Versi](https://img.shields.io/badge/versi-0.11-blue)
+![Versi](https://img.shields.io/badge/versi-0.12-blue)
 ![Stack](https://img.shields.io/badge/stack-Laravel%2013%20%7C%20Inertia%20%7C%20Vue%203%20%7C%20Tailwind%20CSS-41B883?logo=laravel)
 ![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker)
 
@@ -16,12 +16,14 @@
 ## Development
 ```bash
 docker compose up -d
-# Buka http://localhost:8080
+# Buka http://localhost:8088
+# Admin: admin@admin.com / password
+# Guru: daftar di /register
 ```
 
 ## Slice Roadmap
-- [x] Slice 1: Setup Arsitektur Dasar
-- [ ] Slice 2: Modul Autentikasi & Dasbor Admin
+- [x] Slice 1: Setup Arsitektur Dasar (v0.11)
+- [x] Slice 2: Modul Autentikasi & Dasbor Admin (v0.12)
 - [ ] Slice 3: Modul Master Data Akademik
 - [ ] Slice 4: Modul Tujuan Pembelajaran & Bank Soal
 - [ ] Slice 5: Modul Sesi Asesmen (Guru)
