@@ -28,7 +28,7 @@ services:
   web:
     image: nginx:alpine
     ports:
-      - "8080:80"
+      - "8088:80"
     volumes:
       - .:/var/www/html:ro
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
