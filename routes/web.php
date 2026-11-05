@@ -8,11 +8,22 @@ use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardControll
 use App\Http\Controllers\Teacher\LearningObjectiveController;
 use App\Http\Controllers\Teacher\QuestionBankController;
 use App\Http\Controllers\Teacher\QuestionImportController;
+use App\Http\Controllers\Student\AssessmentController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
 // Landing Page
 Route::get('/', [WelcomeController::class, 'show'])->name('home');
+
+// Siswa: akses ujian tanpa login
+Route::prefix('ujian')->name('student.')->group(function () {
+    Route::get('/', [AssessmentController::class, 'index'])->name('access');
+    Route::post('/check', [AssessmentController::class, 'checkToken'])->name('check');
+    Route::get('/{assessmentSession}/prepare', [AssessmentController::class, 'prepare'])->name('prepare');
+    Route::post('/{assessmentSession}/start', [AssessmentController::class, 'start'])->name('start');
+    Route::post('/{assessmentSession}/answer', [AssessmentController::class, 'saveAnswer'])->name('answer');
+    Route::post('/{assessmentSession}/submit', [AssessmentController::class, 'submit'])->name('submit');
+});
 
 // Guest routes
 Route::middleware('guest')->group(function () {

@@ -6,6 +6,7 @@
     <title>{{ config('app.name', 'Asesmen Sumatif') }}</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
 
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @fonts
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
