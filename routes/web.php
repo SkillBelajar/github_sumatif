@@ -23,6 +23,8 @@ Route::prefix('ujian')->name('student.')->group(function () {
     Route::post('/{assessmentSession}/start', [AssessmentController::class, 'start'])->name('start');
     Route::post('/{assessmentSession}/answer', [AssessmentController::class, 'saveAnswer'])->name('answer');
     Route::post('/{assessmentSession}/submit', [AssessmentController::class, 'submit'])->name('submit');
+    Route::get('/hasil/{assessmentResult}', [AssessmentController::class, 'feedback'])
+        ->whereNumber('assessmentResult')->name('hasil');
 });
 
 // Guest routes

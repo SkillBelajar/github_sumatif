@@ -7,13 +7,14 @@ use App\Models\AssessmentAnswer;
 use App\Models\AssessmentResult;
 use App\Models\AssessmentSession;
 use App\Models\Student;
+use App\Models\Question;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 class AssessmentController extends Controller
 {
-    private const VERSION = '0.16';
+    private const VERSION = '0.17';
 
     public function index()
     {
@@ -138,7 +139,7 @@ class AssessmentController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    /** Kunci ujian: status completed + nilai benar/salah per soal. */
+    /** Kunci ujian + auto-grading per TP. */
     public function submit(Request $request, AssessmentSession $assessmentSession)
     {
         $validated = $request->validate([
@@ -148,21 +149,103 @@ class AssessmentController extends Controller
         $result = $this->activeResult($assessmentSession, $validated['student_id']);
 
         DB::transaction(function () use ($result, $assessmentSession) {
-            $correct = $assessmentSession->questions()->pluck('correct_answer', 'questions.id')->all();
+            $result->load('answers.question.learningObjective:id,name');
+
+            // Tipe yang bisa dinilai otomatis. Esai/isian -> null (review guru).
+            $gradable = [Question::TYPE_MC, Question::TYPE_TF];
 
             foreach ($result->answers as $answer) {
-                $answer->update([
-                    'is_correct' => array_key_exists($answer->question_id, $correct)
-                        && trim((string) $answer->student_answer) === trim((string) $correct[$answer->question_id]),
-                ]);
+                $question = $answer->question;
+                $isCorrect = null;
+
+                if ($question && in_array($question->type, $gradable, true)) {
+                    $isCorrect = trim((string) $answer->student_answer) === trim((string) $question->correct_answer);
+                }
+
+                $answer->update(['is_correct' => $isCorrect]);
             }
 
-            $result->update(['status' => 'completed', 'end_time' => now()]);
+            $result->update([
+                'status' => 'completed',
+                'end_time' => now(),
+                // Hitung setelah update jawaban — collection $result->answers sudah stale.
+                'scores_per_tp' => $this->scoresPerTp($result),
+            ]);
         });
 
-        return Inertia::render('Student/Finish', [
+        return redirect()->route('student.hasil', $result->id);
+    }
+
+    /**
+     * Rekap nilai per TP: (benar / jumlah soal TP) * 100, tuntas bila >= ambang.
+     * Soal tanpa TP tetap dihitung sebagai satu kelompok agar total tidak hilang.
+     */
+    private function scoresPerTp(AssessmentResult $result): array
+    {
+        $threshold = (int) config('asesmen.pass_threshold', 70);
+
+        // Query terpisah: collection $result->answers bisa stale setelah update batch.
+        $answers = $result->answers()
+            ->with('question.learningObjective:id,name')
+            ->get();
+
+        return $answers
+            ->groupBy(fn ($a) => $a->question?->learning_objective_id)
+            ->map(function ($group, $tpId) use ($threshold) {
+                $total = $group->count();
+                $correct = $group->where('is_correct', true)->count();
+                $score = $total > 0 ? (int) round($correct / $total * 100) : 0;
+                $tp = $group->first()->question?->learningObjective;
+
+                return [
+                    'tp_id' => $tpId,
+                    'tp_name' => $tp?->name ?? 'Tanpa Tujuan Pembelajaran',
+                    'score' => $score,
+                    'is_passed' => $score >= $threshold,
+                    'correct' => $correct,
+                    'total' => $total,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /** Umpan balik instan: soal + jawaban siswa + kunci + pembahasan. */
+    public function feedback(AssessmentResult $assessmentResult)
+    {
+        abort_unless($assessmentResult->status === 'completed', 404);
+
+        $assessmentResult->load(['answers.question.learningObjective:id,name', 'student:id,name']);
+        $assessmentSession = $assessmentResult->session;
+
+        return Inertia::render('Student/Feedback', [
             'version' => self::VERSION,
             'session' => ['id' => $assessmentSession->id, 'name' => $assessmentSession->name],
+            'result' => [
+                'id' => $assessmentResult->id,
+                'student_name' => $assessmentResult->student?->name,
+                'status' => $assessmentResult->status,
+                'end_time' => $assessmentResult->end_time?->toIso8601String(),
+                'scores_per_tp' => $assessmentResult->scores_per_tp ?? [],
+            ],
+            'review' => $assessmentResult->answers
+                ->sortBy(fn ($a) => $a->question?->id)
+                ->map(fn ($a, $i) => [
+                    'number' => $i + 1,
+                    'question_id' => $a->question_id,
+                    'content' => $a->question?->content,
+                    'type' => $a->question?->type,
+                    'type_label' => Question::TYPES[$a->question?->type] ?? $a->question?->type,
+                    'objective' => $a->question?->learningObjective?->name,
+                    'options' => $a->question?->options,
+                    'student_answer' => $a->student_answer,
+                    'correct_answer' => $a->question?->correct_answer,
+                    'is_correct' => $a->is_correct,
+                    'needs_review' => is_null($a->is_correct),
+                    'explanation' => $a->question?->explanation,
+                ])
+                ->values()
+                ->all(),
         ]);
     }
 

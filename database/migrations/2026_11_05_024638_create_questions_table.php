@@ -16,7 +16,7 @@ return new class extends Migration
             $table->enum('type', ['multiple_choice', 'true_false', 'short_answer', 'essay']);
             $table->text('content');
             $table->json('options')->nullable();
-            $table->text('correct_answer');
+            $table->text('correct_answer')->nullable();
             $table->text('explanation')->nullable();
             $table->timestamps();
         });

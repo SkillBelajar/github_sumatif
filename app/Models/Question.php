@@ -14,6 +14,9 @@ class Question extends Model
         'essay' => 'Esai',
     ];
 
+    public const TYPE_MC = 'multiple_choice';
+    public const TYPE_TF = 'true_false';
+
     public const PHASES = ['Fase A', 'Fase B', 'Fase C', 'Fase D', 'Fase E', 'Fase F'];
 
     protected $fillable = [

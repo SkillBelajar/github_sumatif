@@ -102,7 +102,8 @@ class QuestionBankController extends Controller
             'options.B' => 'required_if:type,multiple_choice|nullable|string',
             'options.C' => 'nullable|string',
             'options.D' => 'nullable|string',
-            'correct_answer' => 'required|string',
+            // Esai/isian tak wajib punya kunci — dinilai guru manual.
+            'correct_answer' => 'required_if:type,multiple_choice,true_false|nullable|string',
             'explanation' => 'nullable|string',
         ]);
     }

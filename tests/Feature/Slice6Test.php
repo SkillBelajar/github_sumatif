@@ -166,13 +166,16 @@ class Slice6Test extends TestCase
             'assessment_result_id' => $result->id, 'question_id' => $q2->id, 'student_answer' => '99',
         ]);
 
-        $this->post('/ujian/'.$session->id.'/submit', ['student_id' => $student->id])->assertOk();
+        $this->post('/ujian/'.$session->id.'/submit', ['student_id' => $student->id])
+            ->assertRedirect(route('student.hasil', $result->id));
 
         $result->refresh();
         $this->assertSame('completed', $result->status);
         $this->assertNotNull($result->end_time);
+        // PG dinilai otomatis: 'B' == kunci 'B'.
         $this->assertTrue($result->answers->firstWhere('question_id', $q1->id)->is_correct);
-        $this->assertFalse($result->answers->firstWhere('question_id', $q2->id)->is_correct);
+        // Isian singkat: tidak dinilai otomatis -> null (menunggu review guru).
+        $this->assertNull($result->answers->firstWhere('question_id', $q2->id)->is_correct);
     }
 
     public function test_submit_and_answer_blocked_after_completed(): void
