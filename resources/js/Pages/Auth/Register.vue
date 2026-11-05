@@ -1,7 +1,7 @@
 <template>
   <Layout>
     <template #nav>
-      <Link href="/" class="text-sm text-gray-500 hover:text-gray-700">← Kembali</Link>
+      <a href="/" class="text-sm text-gray-500 hover:text-gray-700">← Kembali</a>
     </template>
 
     <div class="min-h-[calc(100vh-200px)] flex items-center justify-center px-4 py-12">
@@ -60,7 +60,7 @@
 
           <p class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
             Sudah punya akun?
-            <Link href="/login" class="text-indigo-600 hover:text-indigo-500 font-medium">Masuk</Link>
+            <a href="/login" class="text-indigo-600 hover:text-indigo-500 font-medium">Masuk</a>
           </p>
         </div>
       </div>
