@@ -1,0 +1,172 @@
+<?php
+
+namespace App\Http\Controllers\Teacher;
+
+use App\Http\Controllers\Controller;
+use App\Models\AssessmentResult;
+use App\Models\AssessmentSession;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+
+class ReportController extends Controller
+{
+    /** Dasbor analitik: metrik ringkas + rekapitulasi nilai per TP. */
+    public function results(Request $request, AssessmentSession $assessmentSession)
+    {
+        abort_unless($assessmentSession->user_id === $request->user()->id, 403);
+
+        $assessmentSession->load(['results.student.classroom']);
+        $rows = $this->recap($assessmentSession);
+
+        return inertia('Teacher/Reports/Results', [
+            'session' => [
+                'id' => $assessmentSession->id,
+                'name' => $assessmentSession->name,
+                'token' => $assessmentSession->token,
+                'status' => $assessmentSession->status,
+            ],
+            'summary' => $this->summary($rows),
+            'tpColumns' => $this->tpColumns($rows),
+            'rows' => $rows,
+        ]);
+    }
+
+    /** Unduh rekap sebagai CSV (dibuka langsung di Excel). */
+    public function exportCsv(Request $request, AssessmentSession $assessmentSession)
+    {
+        abort_unless($assessmentSession->user_id === $request->user()->id, 403);
+
+        $assessmentSession->load(['results.student.classroom']);
+        $rows = $this->recap($assessmentSession);
+        $tpColumns = $this->tpColumns($rows);
+        $filename = 'hasil-'.$assessmentSession->token.'-'.now()->format('Ymd-His').'.csv';
+
+        $callback = function () use ($assessmentSession, $tpColumns, $rows) {
+            $out = fopen('php://output', 'w');
+            // BOM UTF-8 supaya Excel tidak merusak nama beraksen.
+            fwrite($out, "\xEF\xBB\xBF");
+
+            fputcsv($out, array_merge(
+                ['Nama Siswa', 'Kelas'],
+                $tpColumns->map(fn ($tp) => $tp['label'].' ('.$tp['name'].')')->all(),
+                ['Nilai Akhir']
+            ));
+
+            foreach ($rows as $row) {
+                fputcsv($out, array_merge(
+                    [$row['student_name'], $row['classroom_name']],
+                    $tpColumns->map(fn ($tp) => $row['scores'][$tp['key']]['label'] ?? '-')->all(),
+                    [$row['final_score'] ?? '-']
+                ));
+            }
+
+            fclose($out);
+        };
+
+        return response()->streamDownload($callback, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
+    /**
+     * Rekap per siswa: nama, kelas, nilai per TP, nilai akhir (rata-rata TP).
+     * kolom 'label' = "80 ✓" — dipakai tabel & CSV.
+     *
+     * @return \Illuminate\Support\Collection<int, array>
+     */
+    private function recap(AssessmentSession $session): Collection
+    {
+        return $session->results
+            ->sortBy(fn (AssessmentResult $r) => $r->student?->name)
+            ->map(function (AssessmentResult $result) {
+                $scores = [];
+                foreach ($result->scores_per_tp ?? [] as $tp) {
+                    $scores['tp_'.$tp['tp_id']] = [
+                        'score' => $tp['score'],
+                        'is_passed' => (bool) $tp['is_passed'],
+                        'correct' => $tp['correct'],
+                        'total' => $tp['total'],
+                        'label' => $tp['score'].' '.($tp['is_passed'] ? '✓' : '*'),
+                        'name' => $tp['tp_name'],
+                    ];
+                }
+
+                $values = collect($scores)->pluck('score');
+
+                return [
+                    'result_id' => $result->id,
+                    'student_name' => $result->student?->name ?? 'Siswa terhapus',
+                    'classroom_name' => $result->student?->classroom?->name ?? '-',
+                    'status' => $result->status,
+                    'scores' => $scores,
+                    'final_score' => $values->isEmpty() ? null : (int) round($values->avg()),
+                ];
+            })
+            ->values();
+    }
+
+    /**
+     * Kolom TP dinamis: urut berdasarkan TP paling sering muncul agar stabil
+     * walau siswa hanya mengerjakan sebagian TP.
+     *
+     * @return \Illuminate\Support\Collection<int, array{key: string, tp_id: mixed, name: string, label: string}>
+     */
+    private function tpColumns(Collection $rows): Collection
+    {
+        $frequency = $rows
+            ->flatMap(fn ($row) => collect($row['scores'])->map(fn ($s, $key) => [$key, $s['tp_id'] ?? $key]))
+            ->countBy(fn ($pair) => $pair[0]);
+
+        $names = $rows
+            ->flatMap(fn ($row) => collect($row['scores'])->map(fn ($s, $key) => [$key, $s['name'] ?? null]))
+            ->keyBy(0)
+            ->map(fn ($pair) => $pair[1]);
+
+        return $frequency
+            ->sortKeys()
+            ->map(function ($count, $key) use ($names) {
+                $tpId = Str::after($key, 'tp_');
+
+                return [
+                    'key' => $key,
+                    'tp_id' => $tpId,
+                    'name' => $names[$key] ?? 'TP '.$tpId,
+                    'label' => 'Nilai TP '.$tpId,
+                ];
+            })
+            ->values();
+    }
+
+    /**
+     * Metrik: total siswa, rata-rata kelas, tuntas vs belum tuntas per TP.
+     *
+     * @return array{total_students: int, average: int|null, per_tp: array<int, array>}
+     */
+    private function summary(Collection $rows): array
+    {
+        $finalScores = $rows->pluck('final_score')->filter(fn ($v) => !is_null($v));
+
+        $perTp = $this->tpColumns($rows)
+            ->map(function ($tp) use ($rows) {
+                $values = $rows->pluck("scores.{$tp['key']}.score")->filter(fn ($v) => !is_null($v));
+                $passed = $rows->filter(fn ($row) => ($row['scores'][$tp['key']]['is_passed'] ?? false) === true)->count();
+
+                return [
+                    'tp_id' => $tp['tp_id'],
+                    'name' => $tp['name'],
+                    'answered' => $values->count(),
+                    'passed' => $passed,
+                    'failed' => $values->count() - $passed,
+                    'average' => $values->isEmpty() ? null : (int) round($values->avg()),
+                ];
+            })
+            ->all();
+
+        return [
+            'total_students' => $rows->count(),
+            'average' => $finalScores->isEmpty() ? null : (int) round($finalScores->avg()),
+            'per_tp' => $perTp,
+        ];
+    }
+}

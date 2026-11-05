@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class AssessmentSession extends Model
@@ -35,6 +36,11 @@ class AssessmentSession extends Model
     public function classrooms(): BelongsToMany
     {
         return $this->belongsToMany(Classroom::class);
+    }
+
+    public function results(): HasMany
+    {
+        return $this->hasMany(AssessmentResult::class, 'assessment_session_id');
     }
 
     public function questions(): BelongsToMany

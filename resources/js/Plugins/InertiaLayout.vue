@@ -53,6 +53,7 @@
                 : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700']">
             Sesi Asesmen
           </a>
+          <p class="px-3 pt-4 text-xs text-gray-400">Versi: 0.18</p>
         </nav>
       </aside>
 

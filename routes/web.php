@@ -9,6 +9,7 @@ use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardControll
 use App\Http\Controllers\Teacher\LearningObjectiveController;
 use App\Http\Controllers\Teacher\QuestionBankController;
 use App\Http\Controllers\Teacher\QuestionImportController;
+use App\Http\Controllers\Teacher\ReportController;
 use App\Http\Controllers\Student\AssessmentController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
@@ -80,4 +81,8 @@ Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')
     Route::get('/assessments/{assessmentSession}/questions', [AssessmentSessionController::class, 'questions'])->name('assessment-sessions.questions');
     Route::post('/assessments/{assessmentSession}/questions', [AssessmentSessionController::class, 'syncQuestions'])->name('assessment-sessions.sync-questions');
     Route::post('/assessments/{assessmentSession}/activate', [AssessmentSessionController::class, 'activate'])->name('assessment-sessions.activate');
+
+    // Hasil Ujian & Ekspor
+    Route::get('/assessments/{assessmentSession}/results', [ReportController::class, 'results'])->name('assessment-sessions.results');
+    Route::get('/assessments/{assessmentSession}/results/export', [ReportController::class, 'exportCsv'])->name('assessment-sessions.results.export');
 });

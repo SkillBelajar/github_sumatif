@@ -40,6 +40,10 @@
                 class="text-xs px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
                 Rakit Soal
               </a>
+              <a :href="'/teacher/assessments/' + s.id + '/results'"
+                class="text-xs px-3 py-1.5 border border-green-300 text-green-700 dark:text-green-400 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/30">
+                Hasil
+              </a>
               <button @click="openEdit(s)" class="text-xs px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Edit</button>
               <button @click="remove(s)" class="text-xs px-3 py-1.5 border border-red-300 text-red-600 rounded-lg hover:bg-red-50">Hapus</button>
             </div>
