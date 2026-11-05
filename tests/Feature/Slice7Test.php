@@ -117,7 +117,7 @@ class Slice7Test extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Student/Feedback', false)
-                ->where('version', '0.17')
+                ->where('version', '1.0 (Final)')
                 ->has('result.scores_per_tp', 2)
                 ->has('review', 3)
                 // review diurutkan per question_id: q1 benar (TP-1), q2 benar, q3 esai.

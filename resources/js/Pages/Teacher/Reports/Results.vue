@@ -92,7 +92,7 @@
         </table>
       </div>
 
-      <p class="text-gray-400 dark:text-gray-500 text-xs mt-8">Versi: 0.18</p>
+      <p class="text-gray-400 dark:text-gray-500 text-xs mt-8">Versi: {{ $page.props.appVersion }}</p>
     </div>
   </Layout>
 </template>

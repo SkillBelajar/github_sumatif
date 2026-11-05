@@ -11,6 +11,7 @@ use App\Http\Controllers\Teacher\QuestionBankController;
 use App\Http\Controllers\Teacher\QuestionImportController;
 use App\Http\Controllers\Teacher\ReportController;
 use App\Http\Controllers\Student\AssessmentController;
+use App\Http\Controllers\UserGuideController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +41,7 @@ Route::middleware('guest')->group(function () {
 // Authenticated routes
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+    Route::get('/panduan', [UserGuideController::class, 'show'])->name('panduan');
 });
 
 // Admin routes

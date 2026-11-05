@@ -14,7 +14,7 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 class AssessmentController extends Controller
 {
-    private const VERSION = '0.17';
+    private const VERSION = '1.0 (Final)';
 
     public function index()
     {
