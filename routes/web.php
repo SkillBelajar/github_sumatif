@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Teacher\AssessmentSessionController;
+use App\Http\Controllers\Teacher\ClassroomController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\LearningObjectiveController;
 use App\Http\Controllers\Teacher\QuestionBankController;
@@ -48,6 +49,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 // Teacher routes
 Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
     Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
+
+    // Kelas & Siswa
+    Route::get('/classrooms', [ClassroomController::class, 'index'])->name('classrooms.index');
+    Route::post('/classrooms', [ClassroomController::class, 'store'])->name('classrooms.store');
+    Route::delete('/classrooms/{classroom}', [ClassroomController::class, 'destroy'])->name('classrooms.destroy');
+    Route::post('/classrooms/{classroom}/students', [ClassroomController::class, 'storeStudent'])->name('classrooms.students.store');
+    Route::delete('/classrooms/{classroom}/students/{student}', [ClassroomController::class, 'destroyStudent'])->whereNumber('student')->name('classrooms.students.destroy');
+    Route::post('/classrooms/{classroom}/students/import', [ClassroomController::class, 'importStudents'])->name('classrooms.students.import');
 
     // Tujuan Pembelajaran (TP)
     Route::get('/learning-objectives', [LearningObjectiveController::class, 'index'])->name('learning-objectives.index');
