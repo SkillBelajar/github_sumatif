@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Teacher\AssessmentSessionController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\LearningObjectiveController;
 use App\Http\Controllers\Teacher\QuestionBankController;
@@ -48,4 +49,13 @@ Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')
     Route::delete('/question-bank/{question}', [QuestionBankController::class, 'destroy'])->name('question-bank.destroy');
     Route::get('/question-bank/template', [QuestionImportController::class, 'downloadTemplate'])->name('question-bank.template');
     Route::post('/question-bank/import', [QuestionImportController::class, 'import'])->name('question-bank.import');
+
+    // Sesi Asesmen
+    Route::get('/assessments', [AssessmentSessionController::class, 'index'])->name('assessment-sessions.index');
+    Route::post('/assessments', [AssessmentSessionController::class, 'store'])->name('assessment-sessions.store');
+    Route::put('/assessments/{assessmentSession}', [AssessmentSessionController::class, 'update'])->name('assessment-sessions.update');
+    Route::delete('/assessments/{assessmentSession}', [AssessmentSessionController::class, 'destroy'])->name('assessment-sessions.destroy');
+    Route::get('/assessments/{assessmentSession}/questions', [AssessmentSessionController::class, 'questions'])->name('assessment-sessions.questions');
+    Route::post('/assessments/{assessmentSession}/questions', [AssessmentSessionController::class, 'syncQuestions'])->name('assessment-sessions.sync-questions');
+    Route::post('/assessments/{assessmentSession}/activate', [AssessmentSessionController::class, 'activate'])->name('assessment-sessions.activate');
 });

@@ -17,7 +17,7 @@
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Sesi Asesmen</p>
-              <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">0</p>
+              <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ stats?.sessions ?? 0 }}</p>
             </div>
             <div class="text-3xl">📋</div>
           </div>
@@ -26,7 +26,7 @@
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Bank Soal</p>
-              <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">0</p>
+              <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ stats?.questions ?? 0 }}</p>
             </div>
             <div class="text-3xl">📚</div>
           </div>
@@ -34,8 +34,8 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 border-l-4 border-purple-500">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Hasil Asesmen</p>
-              <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">0</p>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Ujian Aktif</p>
+              <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ stats?.active_sessions ?? 0 }}</p>
             </div>
             <div class="text-3xl">📊</div>
           </div>
@@ -53,6 +53,8 @@
 
 <script setup>
 import Layout from '../../Plugins/InertiaLayout.vue'
+
+defineProps({ stats: Object })
 
 function logout() {
   const form = useForm({})
