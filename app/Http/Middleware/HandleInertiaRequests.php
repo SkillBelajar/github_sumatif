@@ -10,7 +10,7 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         return array_merge(parent::share($request), [
-            'appVersion' => '0.12.1',
+            'appVersion' => '0.14',
             'auth' => [
                 'user' => $request->user() ? [
                     'id' => $request->user()->id,
@@ -18,6 +18,11 @@ class HandleInertiaRequests extends Middleware
                     'email' => $request->user()->email,
                     'role' => $request->user()->role,
                 ] : null,
+            ],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+                'import_errors' => fn () => $request->session()->get('import_errors'),
             ],
         ]);
     }

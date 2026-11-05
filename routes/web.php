@@ -4,6 +4,9 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
+use App\Http\Controllers\Teacher\LearningObjectiveController;
+use App\Http\Controllers\Teacher\QuestionBankController;
+use App\Http\Controllers\Teacher\QuestionImportController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -31,4 +34,18 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 // Teacher routes
 Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
     Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
+
+    // Tujuan Pembelajaran (TP)
+    Route::get('/learning-objectives', [LearningObjectiveController::class, 'index'])->name('learning-objectives.index');
+    Route::post('/learning-objectives', [LearningObjectiveController::class, 'store'])->name('learning-objectives.store');
+    Route::put('/learning-objectives/{learningObjective}', [LearningObjectiveController::class, 'update'])->name('learning-objectives.update');
+    Route::delete('/learning-objectives/{learningObjective}', [LearningObjectiveController::class, 'destroy'])->name('learning-objectives.destroy');
+
+    // Bank Soal
+    Route::get('/question-bank', [QuestionBankController::class, 'index'])->name('question-bank.index');
+    Route::post('/question-bank', [QuestionBankController::class, 'store'])->name('question-bank.store');
+    Route::put('/question-bank/{question}', [QuestionBankController::class, 'update'])->name('question-bank.update');
+    Route::delete('/question-bank/{question}', [QuestionBankController::class, 'destroy'])->name('question-bank.destroy');
+    Route::get('/question-bank/template', [QuestionImportController::class, 'downloadTemplate'])->name('question-bank.template');
+    Route::post('/question-bank/import', [QuestionImportController::class, 'import'])->name('question-bank.import');
 });
