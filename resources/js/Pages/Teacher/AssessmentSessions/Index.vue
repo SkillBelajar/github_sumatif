@@ -92,12 +92,13 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kelas Peserta</label>
             <div class="max-h-40 overflow-y-auto rounded-lg border border-gray-300 dark:border-gray-600 p-3 space-y-2">
-              <label v-for="c in classrooms" :key="c" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <label v-for="c in allClassrooms" :key="c" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                 <input type="checkbox" :value="c" v-model="form.classroom_ids"
                   class="rounded border-gray-300 dark:border-gray-600 text-indigo-600" />
                 {{ c }}
+                <span v-if="!props.classrooms.includes(c)" class="text-xs text-green-600">(baru)</span>
               </label>
-              <p v-if="!classrooms.length" class="text-xs text-gray-400">Belum ada kelas. Ketik di bawah untuk menambah.</p>
+              <p v-if="!allClassrooms.length" class="text-xs text-gray-400">Belum ada kelas. Ketik di bawah untuk menambah.</p>
             </div>
             <div class="flex gap-2 mt-2">
               <input v-model="newClassroom" type="text" placeholder="Tambah kelas baru (mis. VII-A)"
@@ -137,6 +138,12 @@ const props = defineProps({ sessions: Array, classrooms: Array })
 const showModal = ref(false)
 const editing = ref(null)
 const newClassroom = ref('')
+
+// Kelas dari server + yang baru diketik user (belum tersimpan) — langsung muncul di checklist.
+const allClassrooms = computed(() => {
+  const set = new Set([...(props.classrooms ?? []), ...form.classroom_ids])
+  return [...set].sort()
+})
 
 const form = useForm({
   name: '',

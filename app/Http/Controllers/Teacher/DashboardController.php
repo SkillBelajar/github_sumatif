@@ -15,14 +15,19 @@ class DashboardController extends Controller
     {
         $userId = $request->user()->id;
 
-        $questionCount = Question::whereHas('learningObjective', fn ($q) => $q->where('user_id', $userId))->count();
+        // Subject global (seeder) + milik guru; TP & soal milik guru lewat subject->user_id.
+        $subjectIds = Subject::query()
+            ->whereNull('user_id')->orWhere('user_id', $userId)
+            ->pluck('id');
+
+        $questionCount = Question::whereHas('learningObjective', fn ($q) => $q->whereIn('subject_id', $subjectIds))->count();
 
         return Inertia::render('Teacher/Dashboard', [
             'stats' => [
                 'sessions' => AssessmentSession::where('user_id', $userId)->count(),
                 'active_sessions' => AssessmentSession::where('user_id', $userId)->where('status', 'active')->count(),
                 'questions' => $questionCount,
-                'subjects' => Subject::where('user_id', $userId)->count(),
+                'subjects' => $subjectIds->count(),
             ],
         ]);
     }

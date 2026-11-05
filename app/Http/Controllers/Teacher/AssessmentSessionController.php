@@ -59,8 +59,8 @@ class AssessmentSessionController extends Controller
 
         $session->classrooms()->sync($this->resolveClassrooms($request->user()->id, $validated['classroom_ids'] ?? []));
 
-        return redirect()->route('teacher.assessment-sessions.questions', $session)
-            ->with('success', 'Sesi asesmen dibuat. Lanjut rakit soal.');
+        return redirect()->route('teacher.assessment-sessions.index')
+            ->with('success', 'Sesi asesmen dibuat. Lanjut rakit soal dari daftar.');
     }
 
     public function update(Request $request, AssessmentSession $assessmentSession)
