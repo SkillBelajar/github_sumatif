@@ -5,6 +5,7 @@
         <div class="text-5xl mb-2">📝</div>
         <h1 class="text-2xl font-bold text-white">Asesmen Sumatif</h1>
         <p class="text-indigo-100 text-sm mt-1">Masukkan token ujian dari guru Anda</p>
+        <p v-if="token" class="text-yellow-200 text-xs mt-1 font-mono">Token: {{ token }}</p>
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6">
@@ -60,6 +61,7 @@ import { router } from '@inertiajs/vue3'
 
 const props = defineProps({
   version: String,
+  prefill: String,
   sessionInfo: Object,
   students: Array,
   errors: Object,
@@ -77,7 +79,14 @@ watch(() => props.students, (v) => { students.value = v ?? [] })
 watch(() => props.sessionInfo, (v) => { sessionInfo.value = v ?? null })
 watch(() => props.errors?.token, (v) => { error.value = v ?? '' })
 
-onMounted(() => tokenInput.value?.focus())
+onMounted(() => {
+  tokenInput.value?.focus()
+  // Token datang dari landing page: isi otomatis lalu langsung cek.
+  if (props.prefill) {
+    token.value = props.prefill
+    submit()
+  }
+})
 
 function submit() {
   if (token.value.length !== 6) return

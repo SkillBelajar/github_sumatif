@@ -39,9 +39,25 @@
               class="px-8 py-3 bg-yellow-400 text-indigo-900 font-semibold rounded-lg shadow hover:bg-yellow-300 transition">
             Daftar sebagai Guru
             </a>
-          </div>
-        </div>
-      </div>
+
+            <!-- Kartu Masuk Ujian (siswa, tanpa login) -->
+            <div class="mt-10 max-w-sm mx-auto bg-white rounded-2xl shadow-2xl p-5 text-gray-900">
+              <h2 class="text-lg font-bold text-center text-indigo-700">Anda Siswa?</h2>
+              <p class="text-xs text-center text-gray-500 mt-0.5 mb-3">Masukkan kode ujian dari guru Anda</p>
+              <form action="/ujian" method="get" class="space-y-3">
+                <input type="text" name="token" maxlength="6" placeholder="ABC123" required
+                  @input="$event.target.value = $event.target.value.toUpperCase()"
+                  class="w-full text-center text-2xl tracking-[0.4em] font-mono font-bold py-3 rounded-xl border-2 border-gray-300 uppercase focus:border-indigo-500 focus:outline-none" />
+                <button type="submit"
+                  class="w-full py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition">
+                  Masuk Ujian
+                </button>
+              </form>
+              <a href="/ujian" class="block text-center text-xs text-indigo-500 hover:underline mt-3">Atau buka halaman ujian &rarr;</a>
+            </div>
+            </div>
+            </div>
+            </div>
     </div>
 
     <!-- Features -->

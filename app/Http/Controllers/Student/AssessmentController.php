@@ -16,10 +16,19 @@ class AssessmentController extends Controller
 {
     private const VERSION = '1.0 (Final)';
 
-    public function index()
+    /** Render ulang halaman akses ujian dengan pesan error. */
+    private function accessWithError(string $message)
     {
+        return back()->withErrors(['token' => $message]);
+    }
+
+    public function index(Request $request)
+    {
+        // Token dikirim dari landing page via query string: /ujian?token=ABC123
+        // Halaman Access akan mengisi otomatis lalu mengecek lewat POST /ujian/check.
         return Inertia::render('Student/Access', [
             'version' => self::VERSION,
+            'prefill' => strtoupper((string) $request->input('token')),
         ]);
     }
 
@@ -36,7 +45,7 @@ class AssessmentController extends Controller
             ->first();
 
         if (!$session) {
-            return back()->withErrors(['token' => 'Token tidak ditemukan atau ujian belum aktif.']);
+            return $this->accessWithError('Token tidak ditemukan atau ujian belum aktif.');
         }
 
         $students = $session->classrooms
@@ -48,7 +57,7 @@ class AssessmentController extends Controller
             ->all();
 
         if (empty($students)) {
-            return back()->withErrors(['token' => 'Belum ada siswa di kelas ujian ini.']);
+            return $this->accessWithError('Belum ada siswa di kelas ujian ini.');
         }
 
         return Inertia::render('Student/Access', [
