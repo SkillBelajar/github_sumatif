@@ -22,6 +22,12 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
+# Bind-mount dijalankan sebagai uid 1000; FPM jalan sebagai www-data (uid 33).
+# Bersihkan artefak build root supaya storage/logs bisa ditulis FPM.
+RUN mkdir -p storage/logs storage/framework/{cache/data,sessions,views} bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
 EXPOSE 9000
 
 CMD ["sh", "-c", "php-fpm && nginx -g 'daemon off;'"]
