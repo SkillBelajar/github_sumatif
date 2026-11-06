@@ -12,12 +12,13 @@ class QuestionImportController extends Controller
 {
     public function downloadTemplate()
     {
+        $exampleId = (string) (LearningObjective::orderBy('id')->value('id') ?? 1);
         $rows = [
             ['TP_ID', 'Fase', 'Tipe', 'Soal', 'Opsi_A', 'Opsi_B', 'Opsi_C', 'Opsi_D', 'Kunci_Jawaban', 'Pembahasan'],
-            ['1', 'Fase D', 'multiple_choice', 'Hasil dari 2 + 3 x 4 adalah...', '14', '20', '24', '11', 'A', 'Perkalian dikerjakan lebih dulu: 3x4=12, lalu 2+12=14.'],
-            ['1', 'Fase D', 'true_false', 'Bilangan prima terkecil adalah 2.', '', '', '', '', 'benar', 'Ya, 2 adalah bilangan prima terkecil.'],
-            ['1', 'Fase D', 'short_answer', 'Hasil dari 25 - 10 adalah...', '', '', '', '', '15', '25 - 10 = 15.'],
-            ['1', 'Fase D', 'essay', 'Jelaskan langkah menyelesaikan persamaan 2x + 4 = 10.', '', '', '', '', 'x = 3', 'Kurangi 4 kedua sisi: 2x=6, bagi 2: x=3.'],
+            [$exampleId, 'Fase D', 'multiple_choice', 'Hasil dari 2 + 3 x 4 adalah...', '14', '20', '24', '11', 'A', 'Perkalian dikerjakan lebih dulu: 3x4=12, lalu 2+12=14.'],
+            [$exampleId, 'Fase D', 'true_false', 'Bilangan prima terkecil adalah 2.', '', '', '', '', 'benar', 'Ya, 2 adalah bilangan prima terkecil.'],
+            [$exampleId, 'Fase D', 'short_answer', 'Hasil dari 25 - 10 adalah...', '', '', '', '', '15', '25 - 10 = 15.'],
+            [$exampleId, 'Fase D', 'essay', 'Jelaskan langkah menyelesaikan persamaan 2x + 4 = 10.', '', '', '', '', 'x = 3', 'Kurangi 4 kedua sisi: 2x=6, bagi 2: x=3.'],
         ];
 
         $callback = function () use ($rows) {
