@@ -1,0 +1,34 @@
+https://gemini.google.com/app/43e7dbddcc89a6c6
+
+
+Standar
+## Panduan Pembelajaran dan Asesmen (Asesmen Sumatif) — edisi revisi 2025, Kemendikdasmen/BSKAP
+Nasional (payung: Permendikbudristek No. 12 Tahun 2024 + PP 57/2021 Standar Nasional Pendidikan)
+
+1. **Soal disimpan per "tujuan pembelajaran", bukan per bab** — aplikasi simpan soal dalam bank soal yang ditandai TP-nya dulu, baru digabung jadi kuis.
+   Contoh: Mapel IPA kelas 9 → TP "menjelaskan induksi elektromagnetik" berisi 12 soal pilihan ganda.
+2. **Kelas & fase jadi label, bukan folder terpisah** — cukup satu bank soal, siswa pilih kelas (9A–9D, semua Fase D), guru tinggal filter.
+   Contoh: 1 soal dipakai 9A dan 9C tanpa copy-paste.
+3. **Instrumen beragam, bukan hanya pilihan ganda** — sediakan PG, benar-salah, isian singkat, dan esai singkat.
+   Contoh: 15 PG + 2 esai singkat per kuis.
+4. **Ada kriteria ketercapaian (KKTP) yang jelas & tertulis di awal** — siswa tahu "apa yang dianggap tuntas" sebelum mulai, bukan setelah dinilai.
+   Contoh: rubrik 4 tingkat (perlu bimbingan / cukup / baik / sangat baik) ditampilkan di halaman depan kuis.
+5. **Hasil per TP, bukan satu angka akhir saja** — nilai keluar per tujuan pembelajaran + tanda bintang untuk TP yang belum tuntas.
+   Contoh: "TP 3 (56–100 = tuntas): 62 ✓ | TP 5: 48 * belum tuntas".
+6. **Umpan balik/pembahasan muncul langsung setelah jawab** — inilah sisi formatifnya supaya siswa bisa belajar mandiri (ini inti kebutuhanmu).
+   Contoh: salah nomor 4 → keluar pembahasan 3 baris + link materi.
+7. **Sesi kuis pendek & dibagi beberapa gelombang** — panduan menyarankan asesmen sumatif dipecah beberapa kegiatan agar siswa tidak terburu-buru; nilai akhir = gabungan.
+   Contoh: 3 kuis @20 menit (bukan 1 ujian 90 menit), rata-rata otomatis jadi nilai sumatif.
+8. **Keadilan & keamanan pengerjaan** — login siswa, token sesi, waktu berjalan, satu kali submit, urutan soal diacak; UI sesederhana mungkin agar siswa yang kurang lancar komputer tidak dirugikan. (1/2)
+
+Contoh: tombol raksasa "Mulai", tanpa menu tersembunyi.
+9. **Pelaporan ke guru (dan orang tua)** — guru lihat siapa belum tuntas di TP mana, bisa ekspor rekap per kelas.
+   Contoh: satu halaman: 9A 32 siswa, 5 siswa belum tuntas TP 5, tombol "Unduh CSV".
+
+Referensi:
+- Panduan Pembelajaran dan Asesmen, edisi revisi 2025 (BSKAP/Kemendikdasmen) — https://uploads.belajar.id/document/files/Pembelajaran_dan_Asesmen_2025_01k17ee2v8pqwqybn0y9n8pcd1.pdf
+- Permendikbudristek No. 12 Tahun 2024 tentang Kurikulum (payung hukum asesmen) — https://peraturan.go.id/id/permendikbudristek-no-12-tahun-2024
+- *Teknis pelengkap (bukan dasar hukum):* IMS QTI 3.0 — format soal yang bisa dipindah antara aplikasi kuis (https://www.imsglobal.org/spec/qti/v3p0/oview) · ISO/IEC 23988:2007 — praktik pengamanan asesmen berbasis komputer (https://www.iso.org/standard/41840.html)
+
+Catatan 1 baris: nomor 1–7 itu isi standar; nomor 8–9 dari ISO 23988 (belum jadi SNI, jadi pelengkap).
+Mau aku lanjut jadi spec + potongan fitur siap-kasih-ke-AI-coder (mode vibe coding)? Bilang "lanjut rancang" saja. (2/2)
