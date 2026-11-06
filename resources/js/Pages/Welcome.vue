@@ -77,9 +77,72 @@
         </div>
       </div>
     </div>
+    <!-- Standar Asesmen Sumatif -->
+    <div class="py-16 bg-gray-50 dark:bg-gray-950">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Sesuai Standar Asesmen Sumatif</h2>
+          <p class="mt-2 text-gray-500 dark:text-gray-400">
+            Panduan Pembelajaran dan Asesmen — edisi revisi 2025, Kemendikdasmen/BSKAP
+          </p>
+          <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">
+            Payung hukum: Permendikbudristek No. 12 Tahun 2024 &amp; PP 57/2021 Standar Nasional Pendidikan
+          </p>
+        </div>
+
+        <ol class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <li v-for="(item, i) in standar" :key="i"
+            class="p-6 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+            <div class="flex items-start gap-3">
+              <span class="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white text-sm font-bold flex items-center justify-center">
+                {{ i + 1 }}
+              </span>
+              <div>
+                <h3 class="font-semibold text-gray-900 dark:text-white">{{ item.judul }}</h3>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ item.isi }}</p>
+                <p class="mt-2 text-xs text-gray-400 dark:text-gray-500">{{ item.contoh }}</p>
+              </div>
+            </div>
+          </li>
+        </ol>
+
+        <div class="mt-10 p-6 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+          <h3 class="font-semibold text-gray-900 dark:text-white mb-3">Referensi</h3>
+          <ul class="space-y-2 text-sm">
+            <li v-for="ref in referensi" :key="ref.url">
+              <a :href="ref.url" target="_blank" rel="noopener noreferrer"
+                class="text-indigo-600 dark:text-indigo-400 hover:underline">{{ ref.teks }}</a>
+              <span v-if="ref.catatan" class="text-gray-400 dark:text-gray-500"> — {{ ref.catatan }}</span>
+            </li>
+          </ul>
+          <p class="mt-4 text-xs text-gray-400 dark:text-gray-500">
+            Poin 1&ndash;7 bersumber dari panduan; poin 8&ndash;9 dari ISO/IEC 23988:2007 (pelengkap, belum menjadi SNI).
+          </p>
+        </div>
+      </div>
+    </div>
   </Layout>
 </template>
 
 <script setup>
 import Layout from '../Plugins/InertiaLayout.vue'
+
+const standar = [
+  { judul: 'Soal per Tujuan Pembelajaran', isi: 'Soal disimpan di bank soal bertanda TP, baru digabung jadi kuis.', contoh: 'Mapel IPA kelas 9 → TP "menjelaskan induksi elektromagnetik" berisi 12 soal pilihan ganda.' },
+  { judul: 'Kelas & fase sebagai label', isi: 'Satu bank soal saja; kelas dan fase jadi label yang bisa difilter.', contoh: '1 soal dipakai 9A dan 9C tanpa copy-paste.' },
+  { judul: 'Instrumen beragam', isi: 'Pilihan ganda, benar-salah, isian singkat, dan esai singkat.', contoh: '15 PG + 2 esai singkat per kuis.' },
+  { judul: 'KKTP jelas di awal', isi: 'Kriteria ketercapaian ditulis sebelum siswa mulai, bukan setelah dinilai.', contoh: 'Rubrik 4 tingkat: perlu bimbingan, cukup, baik, sangat baik — tampil di halaman depan kuis.' },
+  { judul: 'Hasil per TP', isi: 'Nilai keluar per tujuan pembelajaran, bukan hanya satu angka akhir.', contoh: 'TP 3 (56–100 = tuntas): 62 ✓ | TP 5: 48 ✻ belum tuntas.' },
+  { judul: 'Umpan balik instan', isi: 'Pembahasan muncul langsung setelah menjawab — sisi formatif agar siswa belajar mandiri.', contoh: 'Salah nomor 4 → keluar pembahasan 3 baris + tautan materi.' },
+  { judul: 'Sesi pendek & bergelombang', isi: 'Asesmen sumatif dipecah beberapa kegiatan agar siswa tidak terburu-buru.', contoh: '3 kuis @20 menit (bukan 1 ujian 90 menit); rata-rata jadi nilai sumatif.' },
+  { judul: 'Keadilan & keamanan', isi: 'Token sesi, waktu berjalan, satu kali submit, urutan soal diacak, UI sesederhana mungkin.', contoh: 'Tombol raksasa "Mulai", tanpa menu tersembunyi.' },
+  { judul: 'Pelaporan ke guru', isi: 'Guru melihat siapa belum tuntas di TP mana, dan bisa mengekspor rekap per kelas.', contoh: 'Satu halaman: 9A 32 siswa, 5 siswa belum tuntas TP 5, tombol "Unduh CSV".' },
+]
+
+const referensi = [
+  { teks: 'Panduan Pembelajaran dan Asesmen, edisi revisi 2025 (BSKAP/Kemendikdasmen)', url: 'https://uploads.belajar.id/document/files/Pembelajaran_dan_Asesmen_2025_01k17ee2v8pqwqybn0y9n8pcd1.pdf', catatan: '' },
+  { teks: 'Permendikbudristek No. 12 Tahun 2024 tentang Kurikulum', url: 'https://peraturan.go.id/id/permendikbudristek-no-12-tahun-2024', catatan: 'payung hukum asesmen' },
+  { teks: 'IMS QTI 3.0', url: 'https://www.imsglobal.org/spec/qti/v3p0/oview', catatan: 'teknis pelengkap, bukan dasar hukum' },
+  { teks: 'ISO/IEC 23988:2007', url: 'https://www.iso.org/standard/41840.html', catatan: 'praktik pengamanan asesmen berbasis komputer' },
+]
 </script>
