@@ -22,9 +22,9 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
         <div class="text-center">
           <h1 class="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-            Asesmen Sumatif
+            Sumatif Guru
             <br>
-            <span class="text-yellow-300">Kurikulum Merdeka</span>
+            <span class="text-yellow-300">Asesmen Kurikulum Merdeka</span>
           </h1>
           <p class="mt-6 max-w-2xl mx-auto text-lg text-indigo-100">
             Platform digital asesmen formatif &amp; sumatif per Tujuan Pembelajaran. Guru buat soal dengan mudah, siswa

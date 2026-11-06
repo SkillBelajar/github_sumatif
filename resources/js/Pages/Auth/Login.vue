@@ -53,6 +53,7 @@
 
 <script setup>
 import { useForm } from '@inertiajs/vue3'
+import { computed } from 'vue'
 import Layout from '../../Plugins/InertiaLayout.vue'
 
 const props = defineProps({
@@ -74,7 +75,3 @@ function submit() {
 }
 </script>
 
-<script>
-import { computed } from 'vue'
-export default { layout: false }
-</script>

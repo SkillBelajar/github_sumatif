@@ -27,7 +27,7 @@
           <span v-if="savedAt" class="ml-auto text-xs text-green-600 dark:text-green-400">✓ tersimpan</span>
         </div>
 
-        <p class="text-base text-gray-900 dark:text-white whitespace-pre-line leading-relaxed">{{ current.content }}</p>
+        <p class="text-base text-gray-900 dark:text-white whitespace-pre-line leading-relaxed no-select">{{ current.content }}</p>
         <p v-if="current.objective" class="mt-2 text-xs text-gray-400">TP: {{ current.objective }}</p>
       </div>
 
@@ -72,6 +72,12 @@
     </main>
 
     <footer class="text-center text-xs text-gray-400 py-3">Versi: {{ version }}</footer>
+
+    <div v-if="violation" class="fixed inset-0 z-50 bg-red-900/95 flex flex-col items-center justify-center text-white text-center p-6">
+      <h2 class="text-2xl font-bold mb-2">Ujian Dibatalkan</h2>
+      <p class="mb-4">Terdeteksi pindah tab atau membuka tab lain selama ujian.</p>
+      <p class="text-red-200 text-sm">Soal akan mengulang dalam 3 detik…</p>
+    </div>
   </div>
 </template>
 
@@ -88,6 +94,38 @@ const questions = ref(props.attempt.questions)
 const answers = ref({ ...props.attempt.answers })
 const index = ref(0)
 const savedAt = ref(null)
+const violation = ref(false)
+let graceTimer = null
+
+const sessionId = props.attempt.session_id
+const tabId = Math.random().toString(36).slice(2)
+const storageKey = 'ujian:tab:' + sessionId
+
+function triggerViolation() {
+  if (violation.value) return
+  violation.value = true
+  clearInterval(tick)
+  clearTimeout(graceTimer)
+  setTimeout(() => { window.location.href = '/ujian?cheat=1' }, 3000)
+}
+
+function startGrace() { clearTimeout(graceTimer); graceTimer = setTimeout(triggerViolation, 3000) }
+function clearGrace() { clearTimeout(graceTimer) }
+
+// Anti copy-paste: blokir klik kanan, salin, potong, tempel, dan shortcut keyboard
+function blockCP(e) { e.preventDefault() }
+function blockShortcut(e) {
+  const ctrl = navigator.platform.toUpperCase().includes('MAC') ? e.metaKey : e.ctrlKey
+  if (ctrl && ['c', 'v', 'x', 'a'].includes(e.key.toLowerCase())) e.preventDefault()
+}
+
+function onStorage(e) {
+  if (e.key === storageKey && e.newValue && e.newValue !== tabId) triggerViolation()
+}
+function onVisibilityChange() {
+  if (document.hidden) startGrace()
+  else clearGrace()
+}
 
 const current = computed(() => questions.value[index.value])
 const total = computed(() => questions.value.length)
@@ -107,8 +145,33 @@ onMounted(() => {
     remaining.value = Math.max(0, Math.floor((deadline - Date.now()) / 1000))
     if (remaining.value === 0) submit()
   }, 1000)
+
+  try { localStorage.setItem(storageKey, tabId) } catch (e) {}
+
+  window.addEventListener('storage', onStorage)
+  document.addEventListener('visibilitychange', onVisibilityChange)
+  window.addEventListener('blur', startGrace)
+  window.addEventListener('focus', clearGrace)
+  document.addEventListener('contextmenu', blockCP, true)
+  document.addEventListener('copy', blockCP, true)
+  document.addEventListener('cut', blockCP, true)
+  document.addEventListener('paste', blockCP, true)
+  document.addEventListener('keydown', blockShortcut, true)
 })
-onUnmounted(() => clearInterval(tick))
+onUnmounted(() => {
+  clearInterval(tick)
+  clearTimeout(graceTimer)
+  window.removeEventListener('storage', onStorage)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+  window.removeEventListener('blur', startGrace)
+  window.removeEventListener('focus', clearGrace)
+  document.removeEventListener('contextmenu', blockCP, true)
+  document.removeEventListener('copy', blockCP, true)
+  document.removeEventListener('cut', blockCP, true)
+  document.removeEventListener('paste', blockCP, true)
+  document.removeEventListener('keydown', blockShortcut, true)
+  try { localStorage.removeItem(storageKey) } catch (e) {}
+})
 
 // Autosave: jawaban yang berubah langsung dikirim ke server.
 watch(() => ({ ...answers.value }), (val, old) => {
@@ -164,3 +227,10 @@ function submit() {
   })
 }
 </script>
+
+<style scoped>
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+</style>

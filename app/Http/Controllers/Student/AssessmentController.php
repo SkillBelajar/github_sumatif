@@ -286,7 +286,7 @@ class AssessmentController extends Controller
                 'type' => $q->type,
                 'type_label' => \App\Models\Question::TYPES[$q->type] ?? $q->type,
                 'content' => $q->content,
-                'options' => $q->options,
+                'options' => collect($q->options)->shuffle()->all(),
                 'objective' => $q->learningObjective?->name,
             ]);
 

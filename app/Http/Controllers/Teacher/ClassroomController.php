@@ -61,14 +61,22 @@ class ClassroomController extends Controller
             'name' => ['required', 'string', 'max:255'],
         ]);
 
-        Student::create(['classroom_id' => $classroom->id, 'name' => trim($validated['name'])]);
+        $name = trim($validated['name']);
+
+        if ($classroom->students()->where('name', $name)->exists()) {
+            return back()->with('error', 'Siswa "' . $name . '" sudah ada di kelas ini.');
+        }
+
+        Student::create(['classroom_id' => $classroom->id, 'name' => $name]);
 
         return back()->with('success', 'Siswa ditambahkan.');
     }
 
-    public function destroyStudent(Request $request, Student $student)
+    public function destroyStudent(Request $request, Classroom $classroom, $student)
     {
-        abort_unless($student->classroom->user_id === $request->user()->id, 403);
+        abort_unless($classroom->user_id === $request->user()->id, 403);
+
+        $student = Student::where('classroom_id', $classroom->id)->findOrFail($student);
 
         try {
             $student->delete();

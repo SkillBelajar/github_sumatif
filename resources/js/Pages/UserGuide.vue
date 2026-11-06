@@ -20,7 +20,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 mb-4">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">👤 Dasbor Admin</h2>
           <p class="text-sm text-gray-600 dark:text-gray-300">
-            Admin memantau guru yang mendaftar ke aplikasi Asesmen Sumatif.
+            Admin memantau guru yang mendaftar ke aplikasi Sumatif Guru.
           </p>
         </div>
 

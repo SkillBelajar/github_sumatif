@@ -1,6 +1,6 @@
-# Asesmen Sumatif Mandiri Siswa
+# Sumatif Guru
 
-**Aplikasi Asesmen Digital Formatif & Sumatif per Tujuan Pembelajaran — Kurikulum Merdeka**
+**Aplikasi Asesmen Sumatif Digital untuk Guru — Kurikulum Merdeka**
 
 ![Versi](https://img.shields.io/badge/versi-0.12-blue)
 ![Stack](https://img.shields.io/badge/stack-Laravel%2013%20%7C%20Inertia%20%7C%20Vue%203%20%7C%20Tailwind%20CSS-41B883?logo=laravel)

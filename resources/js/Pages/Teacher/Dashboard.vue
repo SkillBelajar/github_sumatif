@@ -52,6 +52,7 @@
 </template>
 
 <script setup>
+import { useForm } from '@inertiajs/vue3'
 import Layout from '../../Plugins/InertiaLayout.vue'
 
 defineProps({ stats: Object })
@@ -60,9 +61,4 @@ function logout() {
   const form = useForm({})
   form.post('/logout')
 }
-</script>
-
-<script>
-import { useForm } from '@inertiajs/vue3'
-export default { layout: false }
 </script>

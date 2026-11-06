@@ -3,12 +3,15 @@
     <div class="w-full max-w-md">
       <div class="text-center mb-6">
         <div class="text-5xl mb-2">📝</div>
-        <h1 class="text-2xl font-bold text-white">Asesmen Sumatif</h1>
+        <h1 class="text-2xl font-bold text-white">Sumatif Guru</h1>
         <p class="text-indigo-100 text-sm mt-1">Masukkan token ujian dari guru Anda</p>
         <p v-if="token" class="text-yellow-200 text-xs mt-1 font-mono">Token: {{ token }}</p>
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6">
+        <p v-if="cheat" class="mb-4 p-3 rounded-xl bg-red-100 text-red-700 text-xs text-center">
+          Ujian sebelumnya dibatalkan: terdeteksi pindah tab atau membuka tab lain. Silakan mulai ulang.
+        </p>
         <form @submit.prevent="submit" class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Token Ujian</label>
@@ -69,6 +72,7 @@ const props = defineProps({
 
 const token = ref('')
 const loading = ref(false)
+const cheat = ref(window.location.search.includes('cheat=1'))
 const students = ref(props.students ?? [])
 const sessionInfo = ref(props.sessionInfo ?? null)
 const selectedStudent = ref('')
