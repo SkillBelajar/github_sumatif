@@ -72,7 +72,7 @@ class AssessmentSessionController extends Controller
             'duration_minutes' => 'required|integer|min:1|max:600',
             'token' => ['nullable', 'string', 'min:5', 'max:16', 'regex:/^[A-Za-z0-9]+$/', Rule::unique('assessment_sessions', 'token')->ignore($assessmentSession->id)],
             'classroom_ids' => 'nullable|array',
-            'classroom_ids.*' => ['integer', Rule::exists('classrooms', 'id')->where('user_id', $request->user()->id)],
+            'classroom_ids.*' => 'string|max:100',
         ]);
 
         $assessmentSession->update([
