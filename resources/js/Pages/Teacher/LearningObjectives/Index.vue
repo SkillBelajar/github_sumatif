@@ -72,6 +72,10 @@
               <option v-for="s in subjects" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select>
             <p v-if="form.errors.subject_id" class="mt-1 text-xs text-red-600">{{ form.errors.subject_id }}</p>
+            <p v-if="!subjects.length" class="mt-2 text-xs text-amber-600">
+              Belum ada mata pelajaran.
+              <a href="/teacher/subjects" class="font-medium text-indigo-600 hover:text-indigo-500 underline">Tambah mata pelajaran dulu</a>
+            </p>
           </div>
 
           <div>

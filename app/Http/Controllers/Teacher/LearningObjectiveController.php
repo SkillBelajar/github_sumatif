@@ -10,10 +10,11 @@ use Inertia\Inertia;
 
 class LearningObjectiveController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         return Inertia::render('Teacher/LearningObjectives/Index', [
             'objectives' => LearningObjective::with('subject:id,name')
+                ->whereHas('subject', fn ($q) => $q->where('user_id', $request->user()->id))
                 ->latest()
                 ->get()
                 ->map(fn ($lo) => [
@@ -24,7 +25,9 @@ class LearningObjectiveController extends Controller
                     'kktp_rubric' => $lo->kktp_rubric,
                     'questions_count' => $lo->questions()->count(),
                 ]),
-            'subjects' => Subject::orderBy('name')->get(['id', 'name']),
+            'subjects' => Subject::where('user_id', $request->user()->id)
+                ->orderBy('name')
+                ->get(['id', 'name']),
         ]);
     }
 

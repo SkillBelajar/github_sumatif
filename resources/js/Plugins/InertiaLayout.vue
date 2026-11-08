@@ -38,6 +38,13 @@
                 : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700']">
             Kelas &amp; Siswa
           </a>
+          <a href="/teacher/subjects"
+            :class="['block px-3 py-2 rounded-lg text-sm font-medium',
+              $page.url.startsWith('/teacher/subjects')
+                ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700']">
+            Mata Pelajaran
+          </a>
           <a href="/teacher/learning-objectives"
             :class="['block px-3 py-2 rounded-lg text-sm font-medium',
               $page.url.startsWith('/teacher/learning-objectives')
