@@ -126,7 +126,11 @@ class AssessmentSessionController extends Controller
             $query->where('type', $request->type);
         }
 
-        $questions = $query->latest()->paginate(20)->through(fn (Question $q) => [
+        $perPage = $request->filled("per_page") && $request->per_page === "all"
+            ? $query->count() ?: 1
+            : (int) ($request->per_page ?: 20);
+
+        $questions = $query->latest()->paginate($perPage)->withQueryString()->through(fn (Question $q) => [
             'id' => $q->id,
             'type' => $q->type,
             'type_label' => Question::TYPES[$q->type] ?? $q->type,
@@ -153,6 +157,7 @@ class AssessmentSessionController extends Controller
                 'subject_id' => $request->query('subject_id'),
                 'learning_objective_id' => $request->query('learning_objective_id'),
                 'type' => $request->query('type'),
+                'per_page' => $request->query('per_page', '20'),
             ],
         ]);
     }

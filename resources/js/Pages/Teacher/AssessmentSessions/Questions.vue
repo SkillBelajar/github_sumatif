@@ -40,7 +40,7 @@
             <input type="checkbox" :checked="allVisibleChecked" :disabled="!allVisibleIds.length"
               @change="toggleAll"
               class="rounded border-gray-300 dark:border-gray-600 text-indigo-600" />
-            Centang semua soal yang tampil
+            {{ filter.per_page === 'all' ? 'Centang semua soal (' + (questions.total ?? allVisibleIds.length) + ')' : 'Centang semua soal yang tampil' }}
           </label>
         </div>
       </div>
@@ -63,6 +63,13 @@
           class="rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm">
           <option value="">Semua Tipe</option>
           <option v-for="(label, key) in types" :key="key" :value="key">{{ label }}</option>
+        </select>
+        <select v-model="filter.per_page" @change="applyFilter"
+          class="rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm">
+          <option value="20">Tampilkan: 20</option>
+          <option value="50">Tampilkan: 50</option>
+          <option value="100">Tampilkan: 100</option>
+          <option value="all">Tampilkan: Semua</option>
         </select>
         <button @click="resetFilter" class="text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
           Reset Filter
@@ -129,6 +136,7 @@ const filter = ref({
   subject_id: props.filters.subject_id ?? '',
   learning_objective_id: props.filters.learning_objective_id ?? '',
   type: props.filters.type ?? '',
+  per_page: props.filters.per_page ?? '20',
 })
 
 const form = ref({ processing: false })
@@ -173,7 +181,7 @@ function applyFilter() {
 }
 
 function resetFilter() {
-  filter.value = { subject_id: '', learning_objective_id: '', type: '' }
+  filter.value = { subject_id: '', learning_objective_id: '', type: '', per_page: '20' }
   applyFilter()
 }
 
