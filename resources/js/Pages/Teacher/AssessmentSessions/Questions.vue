@@ -32,9 +32,17 @@
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 mb-5">
-        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Soal terpilih: <span class="font-bold text-indigo-600 dark:text-indigo-400">{{ selected.length }}</span>
-        </p>
+        <div class="flex items-center justify-between gap-3">
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Soal terpilih: <span class="font-bold text-indigo-600 dark:text-indigo-400">{{ selected.length }}</span>
+          </p>
+          <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+            <input type="checkbox" :checked="allVisibleChecked" :disabled="!allVisibleIds.length"
+              @change="toggleAll"
+              class="rounded border-gray-300 dark:border-gray-600 text-indigo-600" />
+            Centang semua soal yang tampil
+          </label>
+        </div>
       </div>
 
       <!-- Filter -->
@@ -130,6 +138,20 @@ const filteredObjectives = computed(() =>
     ? props.objectives.filter(o => o.subject_id === Number(filter.value.subject_id))
     : props.objectives
 )
+
+const allVisibleIds = computed(() => props.questions.data.map(q => q.id))
+const allVisibleChecked = computed(() =>
+  allVisibleIds.value.length > 0 &&
+  allVisibleIds.value.every(id => selected.value.includes(id))
+)
+
+function toggleAll() {
+  if (allVisibleChecked.value) {
+    selected.value = selected.value.filter(id => !allVisibleIds.value.includes(id))
+  } else {
+    selected.value = [...new Set([...selected.value, ...allVisibleIds.value])]
+  }
+}
 
 function statusLabel(s) {
   return { draft: 'Draft', active: 'Aktif', closed: 'Ditutup' }[s] ?? s
