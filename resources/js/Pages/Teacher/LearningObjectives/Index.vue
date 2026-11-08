@@ -28,6 +28,9 @@
                 <span class="px-2 py-0.5 text-xs font-semibold rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200">
                   {{ lo.subject_name }}
                 </span>
+                <span class="px-2 py-0.5 text-xs font-mono rounded bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200" title="TP_ID untuk import soal">
+                  TP_ID: {{ lo.id }}
+                </span>
                 <span class="text-xs text-gray-400">{{ lo.questions_count }} soal</span>
               </div>
               <p class="mt-2 text-sm text-gray-900 dark:text-white whitespace-pre-line">{{ lo.name }}</p>
