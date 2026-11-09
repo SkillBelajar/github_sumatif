@@ -78,32 +78,56 @@ class ReportController extends Controller
      */
     private function recap(AssessmentSession $session): Collection
     {
-        // Dengan ujian ulang, satu siswa bisa punya beberapa percobaan.
-        // Rekap guru memakai percobaan TERAKHIR saja.
-        return $session->results
-            ->filter(fn (AssessmentResult $r) => $r->is_latest)
-            ->sortBy(fn (AssessmentResult $r) => $r->student?->name)
-            ->map(function (AssessmentResult $result) {
-                $scores = [];
-                foreach ($result->scores_per_tp ?? [] as $tp) {
-                    $scores['tp_'.$tp['tp_id']] = [
-                        'score' => $tp['score'],
-                        'is_passed' => (bool) $tp['is_passed'],
-                        'correct' => $tp['correct'],
-                        'total' => $tp['total'],
-                        'label' => $tp['score'].' '.($tp['is_passed'] ? '✓' : '*'),
-                        'name' => $tp['tp_name'],
-                    ];
+        // Ujian ulang bebas: ambil NILAI TERTINGGI tiap TP di antara semua
+        // percobaan siswa yang sudah selesai, bukan nilai terakhir.
+        $completed = $session->results
+            ->filter(fn (AssessmentResult $r) => $r->status === 'completed' && $r->student_id);
+
+        $byStudent = $completed
+            ->groupBy(fn (AssessmentResult $r) => $r->student_id)
+            ->sortBy(fn (Collection $group) => $group->first()->student?->name);
+
+        return $byStudent
+            ->map(function (Collection $attempts) {
+                $best = [];      // tp_id => TP terbaik
+                $bestResultId = null;
+                $bestFinal = -1;
+
+                foreach ($attempts as $result) {
+                    $values = [];
+                    foreach ($result->scores_per_tp ?? [] as $tp) {
+                        $values[] = $tp['score'];
+                        $key = 'tp_'.$tp['tp_id'];
+                        if (!isset($best[$key]) || $tp['score'] > $best[$key]['score']) {
+                            $best[$key] = [
+                                'score' => $tp['score'],
+                                'is_passed' => (bool) $tp['is_passed'],
+                                'correct' => $tp['correct'],
+                                'total' => $tp['total'],
+                                'label' => $tp['score'].' '.($tp['is_passed'] ? '✓' : '*'),
+                                'name' => $tp['tp_name'],
+                            ];
+                        }
+                    }
+                    // catat percobaan dengan rata-rata tertinggi (untuk status tampilan)
+                    if ($values !== []) {
+                        $final = (int) round(collect($values)->avg());
+                        if ($final > $bestFinal) {
+                            $bestFinal = $final;
+                            $bestResultId = $result->id;
+                        }
+                    }
                 }
 
-                $values = collect($scores)->pluck('score');
+                $first = $attempts->first();
+                $values = collect($best)->pluck('score');
 
                 return [
-                    'result_id' => $result->id,
-                    'student_name' => $result->student?->name ?? 'Siswa terhapus',
-                    'classroom_name' => $result->student?->classroom?->name ?? '-',
-                    'status' => $result->status,
-                    'scores' => $scores,
+                    'result_id' => $bestResultId ?? $first->id,
+                    'student_name' => $first->student?->name ?? 'Siswa terhapus',
+                    'classroom_name' => $first->student?->classroom?->name ?? '-',
+                    'status' => 'completed',
+                    'scores' => $best,
                     'final_score' => $values->isEmpty() ? null : (int) round($values->avg()),
                 ];
             })
@@ -118,9 +142,13 @@ class ReportController extends Controller
     private function classes(AssessmentSession $session, Collection $rows): Collection
     {
         // siswa yang sudah punya result
+        // Nilai tertinggi per siswa (ujian ulang bebas).
         $doneByStudent = $session->results
-            ->filter(fn ($r) => $r->student_id && $r->is_latest)
-            ->mapWithKeys(fn ($r) => [$r->student_id => $r])
+            ->filter(fn ($r) => $r->student_id && $r->status === 'completed')
+            ->groupBy(fn ($r) => $r->student_id)
+            ->map(fn (Collection $attempts) => $attempts->sortByDesc(function ($r) {
+                return collect($r->scores_per_tp ?? [])->pluck('score')->avg() ?? -1;
+            })->first())
             ->all();
 
         // kelas yang ditugaskan ke sesi ini
