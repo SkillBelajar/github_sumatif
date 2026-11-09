@@ -92,6 +92,54 @@
         </table>
       </div>
 
+      <!-- Rekap per kelas: sudah / belum mengerjakan -->
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 mt-10">Rekap per Kelas</h2>
+      <p v-if="!classes.length" class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        Belum ada kelas yang ditugaskan pada sesi ini.
+      </p>
+
+      <div v-for="cls in classes" :key="cls.classroom_id" class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold text-gray-900 dark:text-white">Kelas {{ cls.name }}</h3>
+          <span class="text-sm text-gray-500 dark:text-gray-400">
+            <span class="text-green-600 dark:text-green-400 font-semibold">{{ cls.done }} sudah</span>
+            &middot;
+            <span class="text-red-600 dark:text-red-400 font-semibold">{{ cls.total - cls.done }} belum</span>
+            &middot; {{ cls.total }} siswa
+          </span>
+        </div>
+
+        <!-- progress bar -->
+        <div class="flex h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 mb-3">
+          <div class="bg-green-500" :style="{ width: pct(cls.done, cls.total) + '%' }" />
+        </div>
+
+        <div v-if="cls.done_list.length" class="mb-3">
+          <p class="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1.5">✓ Sudah mengerjakan</p>
+          <div class="flex flex-wrap gap-1.5">
+            <span
+              v-for="st in cls.done_list"
+              :key="st.name"
+              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
+            >
+              {{ st.name }}
+              <span class="font-semibold tabular-nums">{{ st.final_score }}</span>
+            </span>
+          </div>
+        </div>
+
+        <div v-if="cls.not_done_list.length">
+          <p class="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1.5">Belum mengerjakan</p>
+          <div class="flex flex-wrap gap-1.5">
+            <span
+              v-for="st in cls.not_done_list"
+              :key="st.name"
+              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"
+            >{{ st.name }}</span>
+          </div>
+        </div>
+      </div>
+
       <p class="text-gray-400 dark:text-gray-500 text-xs mt-8">Versi: {{ $page.props.appVersion }}</p>
     </div>
   </Layout>
@@ -105,6 +153,7 @@ defineProps({
   summary: Object,
   tpColumns: Array,
   rows: Array,
+  classes: { type: Array, default: () => [] },
 })
 
 function pct(part, total) {

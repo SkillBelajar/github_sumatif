@@ -29,6 +29,7 @@ class ReportController extends Controller
             'summary' => $this->summary($rows),
             'tpColumns' => $this->tpColumns($rows),
             'rows' => $rows,
+            'classes' => $this->classes($assessmentSession, $rows),
         ]);
     }
 
@@ -104,6 +105,51 @@ class ReportController extends Controller
                 ];
             })
             ->values();
+    }
+
+    /**
+     * Rekap per kelas: daftar siswa yang sudah & belum mengerjakan.
+     *
+     * @return \Illuminate\Support\Collection<int, array{classroom_id: mixed, name: string, total: int, done: int, done_list: array, not_done_list: array}>
+     */
+    private function classes(AssessmentSession $session, Collection $rows): Collection
+    {
+        // siswa yang sudah punya result
+        $doneByStudent = $session->results
+            ->filter(fn ($r) => $r->student_id)
+            ->mapWithKeys(fn ($r) => [$r->student_id => $r])
+            ->all();
+
+        // kelas yang ditugaskan ke sesi ini
+        $classrooms = $session->classrooms()->orderBy('name')->get();
+
+        return $classrooms->map(function ($classroom) use ($doneByStudent) {
+            $students = $classroom->students()->orderBy('name')->get();
+
+            $done = [];
+            $notDone = [];
+            foreach ($students as $student) {
+                if (array_key_exists($student->id, $doneByStudent)) {
+                    $result = $doneByStudent[$student->id];
+                    $done[] = [
+                        'name' => $student->name,
+                        'final_score' => (int) round(collect($result->scores_per_tp ?? [])->pluck('score')->avg() ?? 0),
+                        'status' => $result->status,
+                    ];
+                } else {
+                    $notDone[] = ['name' => $student->name];
+                }
+            }
+
+            return [
+                'classroom_id' => $classroom->id,
+                'name' => $classroom->name,
+                'total' => $students->count(),
+                'done' => count($done),
+                'done_list' => $done,
+                'not_done_list' => $notDone,
+            ];
+        });
     }
 
     /**
