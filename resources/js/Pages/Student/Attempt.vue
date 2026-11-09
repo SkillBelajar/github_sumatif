@@ -181,28 +181,26 @@ watch(() => ({ ...answers.value }), (val, old) => {
   }
 }, { deep: true })
 
-let saving = false
-async function save(questionId, answer) {
-  if (saving) return
-  saving = true
-  try {
-    await fetch('/ujian/' + props.attempt.session_id + '/answer', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
-      },
-      body: JSON.stringify({
-        student_id: props.attempt.student_id,
-        question_id: Number(questionId),
-        student_answer: answer ?? '',
-      }),
-    })
-    savedAt.value = Date.now()
-  } finally {
-    saving = false
-  }
+// Autosave tanpa skip: setiap perubahan jawaban wajib terkirim (server idempotent).
+let pendingSave = null
+function save(questionId, answer) {
+  pendingSave = fetch('/ujian/' + props.attempt.session_id + '/answer', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+    },
+    body: JSON.stringify({
+      student_id: props.attempt.student_id,
+      question_id: Number(questionId),
+      student_answer: answer ?? '',
+    }),
+  })
+  pendingSave
+    .then(() => { savedAt.value = Date.now() })
+    .catch(() => {})
+  return pendingSave
 }
 
 function choose(key) {
@@ -221,7 +219,9 @@ function confirmSubmit() {
   submit()
 }
 
-function submit() {
+async function submit() {
+  // Pastikan autosave jawaban terakhir selesai sebelum mengumpulkan.
+  if (pendingSave) { try { await pendingSave } catch (e) {} }
   router.post('/ujian/' + props.attempt.session_id + '/submit', {
     student_id: props.attempt.student_id,
   })
