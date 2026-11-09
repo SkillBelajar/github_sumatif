@@ -286,7 +286,12 @@ class AssessmentController extends Controller
                 'type' => $q->type,
                 'type_label' => \App\Models\Question::TYPES[$q->type] ?? $q->type,
                 'content' => $q->content,
-                'options' => collect($q->options)->shuffle()->all(),
+                // Pertahankan key huruf (A/B/C/D) agar sama dengan correct_answer.
+                // shuffle() Collection membuang key -> shuffle manual pada key.
+                'options' => $q->options
+                    ? collect(array_keys($q->options))->shuffle()
+                        ->mapWithKeys(fn ($k) => [$k => $q->options[$k]])->all()
+                    : null,
                 'objective' => $q->learningObjective?->name,
             ]);
 
