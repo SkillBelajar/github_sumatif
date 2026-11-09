@@ -78,7 +78,10 @@ class ReportController extends Controller
      */
     private function recap(AssessmentSession $session): Collection
     {
+        // Dengan ujian ulang, satu siswa bisa punya beberapa percobaan.
+        // Rekap guru memakai percobaan TERAKHIR saja.
         return $session->results
+            ->filter(fn (AssessmentResult $r) => $r->is_latest)
             ->sortBy(fn (AssessmentResult $r) => $r->student?->name)
             ->map(function (AssessmentResult $result) {
                 $scores = [];
@@ -116,7 +119,7 @@ class ReportController extends Controller
     {
         // siswa yang sudah punya result
         $doneByStudent = $session->results
-            ->filter(fn ($r) => $r->student_id)
+            ->filter(fn ($r) => $r->student_id && $r->is_latest)
             ->mapWithKeys(fn ($r) => [$r->student_id => $r])
             ->all();
 

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class AssessmentResult extends Model
 {
     protected $fillable = [
-        'assessment_session_id', 'student_id', 'start_time', 'end_time', 'status', 'scores_per_tp',
+        'assessment_session_id', 'student_id', 'attempt', 'is_latest', 'start_time', 'end_time', 'status', 'scores_per_tp',
     ];
 
     protected function casts(): array
@@ -18,6 +18,7 @@ class AssessmentResult extends Model
             'start_time' => 'datetime',
             'end_time' => 'datetime',
             'scores_per_tp' => 'array',
+            'is_latest' => 'boolean',
         ];
     }
 

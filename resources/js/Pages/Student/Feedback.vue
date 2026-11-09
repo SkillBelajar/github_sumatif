@@ -93,12 +93,19 @@
         </div>
       </div>
 
-      <div class="text-center mt-8">
+      <div class="text-center mt-8 space-y-3">
         <a
-          href="/ujian"
-          class="inline-block px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors"
-        >Kembali ke Halaman Ujian</a>
-        <p class="text-gray-400 dark:text-gray-500 text-xs mt-4">Versi: {{ version }}</p>
+          :href="`/ujian/${session.id}/prepare?student_id=${result.student_id}`"
+          class="inline-block px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-colors"
+        >Kerjakan Ulang</a>
+        <div>
+          <a
+            href="/ujian"
+            class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+          >Kembali ke Halaman Ujian</a>
+        </div>
+        <p class="text-gray-400 dark:text-gray-500 text-xs mt-2">Ujian ulang bebas — nilai terakhir yang dihitung.</p>
+        <p class="text-gray-400 dark:text-gray-500 text-xs">Versi: {{ version }}</p>
       </div>
     </div>
   </div>

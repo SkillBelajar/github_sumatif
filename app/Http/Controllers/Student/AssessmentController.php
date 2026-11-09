@@ -111,10 +111,36 @@ class AssessmentController extends Controller
             403
         );
 
-        $result = AssessmentResult::firstOrCreate(
-            ['assessment_session_id' => $assessmentSession->id, 'student_id' => $student->id],
-            ['start_time' => now(), 'status' => 'in_progress']
-        );
+        // Cari percobaan yang sedang berjalan. Kalau tidak ada:
+        // - belum pernah ujian -> mulai percobaan pertama
+        // - sudah pernah selesai -> ujian ulang bebas, buat percobaan baru
+        $result = AssessmentResult::where([
+            'assessment_session_id' => $assessmentSession->id,
+            'student_id' => $student->id,
+            'status' => 'in_progress',
+        ])->first();
+
+        if (is_null($result)) {
+            $latest = AssessmentResult::where([
+                'assessment_session_id' => $assessmentSession->id,
+                'student_id' => $student->id,
+            ])->orderByDesc('id')->first();
+
+            $result = AssessmentResult::create([
+                'assessment_session_id' => $assessmentSession->id,
+                'student_id' => $student->id,
+                'attempt' => ($latest->attempt ?? 0) + 1,
+                'is_latest' => true,
+                'start_time' => now(),
+                'status' => 'in_progress',
+            ]);
+
+            // Percobaan lama tidak lagi jadi terbaru.
+            AssessmentResult::where('assessment_session_id', $assessmentSession->id)
+                ->where('student_id', $student->id)
+                ->where('id', '!=', $result->id)
+                ->update(['is_latest' => false]);
+        }
 
         $saved = $result->answers()->pluck('student_answer', 'question_id');
 
@@ -232,6 +258,7 @@ class AssessmentController extends Controller
             'session' => ['id' => $assessmentSession->id, 'name' => $assessmentSession->name],
             'result' => [
                 'id' => $assessmentResult->id,
+                'student_id' => $assessmentResult->student_id,
                 'student_name' => $assessmentResult->student?->name,
                 'status' => $assessmentResult->status,
                 'end_time' => $assessmentResult->end_time?->toIso8601String(),
@@ -258,7 +285,7 @@ class AssessmentController extends Controller
         ]);
     }
 
-    private function activeResult(AssessmentSession $session, int $studentId): AssessmentResult
+    private function activeResult(AssessmentSession $session, int $studentId, bool $createNew = false): AssessmentResult
     {
         $result = AssessmentResult::where([
             'assessment_session_id' => $session->id,
@@ -266,10 +293,43 @@ class AssessmentController extends Controller
             'status' => 'in_progress',
         ])->first();
 
-        abort_if(is_null($result), 409, 'Ujian belum dimulai atau sudah dikumpulkan.');
+        if (is_null($result)) {
+            // Ujian ulang bebas: kalau percobaan sebelumnya sudah selesai, buat percobaan baru.
+            if ($createNew && $session->results()->where('student_id', $studentId)->where('status', 'completed')->exists()) {
+                $latest = $this->latestResult($session, $studentId);
+                $nextAttempt = ($latest->attempt ?? 0) + 1;
+
+                $result = AssessmentResult::create([
+                    'assessment_session_id' => $session->id,
+                    'student_id' => $studentId,
+                    'attempt' => $nextAttempt,
+                    'is_latest' => true,
+                    'start_time' => now(),
+                    'status' => 'in_progress',
+                ]);
+
+                // Percobaan lama tidak lagi jadi terbaru.
+                AssessmentResult::where('assessment_session_id', $session->id)
+                    ->where('student_id', $studentId)
+                    ->where('id', '!=', $result->id)
+                    ->update(['is_latest' => false]);
+            } else {
+                abort(409, 'Ujian belum dimulai atau sudah dikumpulkan.');
+            }
+        }
+
         abort_if($result->start_time->copy()->addMinutes($session->duration_minutes)->isPast(), 410, 'Waktu ujian sudah habis.');
 
         return $result;
+    }
+
+    /** Percobaan terbaru siswa pada suatu sesi. */
+    private function latestResult(AssessmentSession $session, int $studentId): ?AssessmentResult
+    {
+        return AssessmentResult::where([
+            'assessment_session_id' => $session->id,
+            'student_id' => $studentId,
+        ])->orderByDesc('id')->first();
     }
 
     /** Soal diacak server-side; seed dari result id supaya urutan stabil saat refresh. */
