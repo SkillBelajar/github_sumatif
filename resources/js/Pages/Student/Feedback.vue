@@ -67,10 +67,6 @@
                   {{ labelOf(item) }}
                 </span>
               </p>
-              <p v-if="!item.is_correct && item.correct_answer" class="flex gap-2">
-                <span class="text-gray-500 dark:text-gray-400 shrink-0">Kunci Jawaban:</span>
-                <span class="font-medium text-green-700 dark:text-green-400">{{ item.correct_answer }}</span>
-              </p>
             </div>
 
             <div

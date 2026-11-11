@@ -283,8 +283,10 @@ class AssessmentController extends Controller
                 'end_time' => $assessmentResult->end_time?->toIso8601String(),
                 'scores_per_tp' => $assessmentResult->scores_per_tp ?? [],
             ],
+            // Urutan acak tiap kali dibuka (agar siswa belajar, bukan hafal urutan),
+            // dan kunci jawaban TIDAK dikirim ke browser sama sekali.
             'review' => $assessmentResult->answers
-                ->sortBy(fn ($a) => $a->question?->id)
+                ->shuffle()
                 ->map(fn ($a, $i) => [
                     'number' => $i + 1,
                     'question_id' => $a->question_id,
@@ -294,7 +296,6 @@ class AssessmentController extends Controller
                     'objective' => $a->question?->learningObjective?->name,
                     'options' => $a->question?->options,
                     'student_answer' => $a->student_answer,
-                    'correct_answer' => $a->question?->correct_answer,
                     'is_correct' => $a->is_correct,
                     'needs_review' => is_null($a->is_correct),
                     'explanation' => $a->question?->explanation,
