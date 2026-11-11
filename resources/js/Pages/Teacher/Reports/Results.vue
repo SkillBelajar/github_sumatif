@@ -53,43 +53,45 @@
         </p>
       </div>
 
-      <!-- Tabel rekap nilai -->
+      <!-- Rekapitulasi nilai per kelas -->
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 mt-8">Rekapitulasi Nilai Siswa</h2>
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead>
-            <tr class="border-b border-gray-200 dark:border-gray-700 text-left text-gray-500 dark:text-gray-400">
-              <th class="px-4 py-3 font-medium">Nama Siswa</th>
-              <th class="px-4 py-3 font-medium">Kelas</th>
-              <th v-for="tp in tpColumns" :key="tp.key" class="px-4 py-3 font-medium whitespace-nowrap">
-                {{ tp.label }}<span class="block text-xs font-normal text-gray-400">{{ tp.name }}</span>
-              </th>
-              <th class="px-4 py-3 font-medium">Nilai Akhir</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="row in rows" :key="row.result_id" class="border-b border-gray-100 dark:border-gray-700/50">
-              <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ row.student_name }}</td>
-              <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ row.classroom_name }}</td>
-              <td v-for="tp in tpColumns" :key="tp.key" class="px-4 py-3 whitespace-nowrap">
-                <span
-                  v-if="row.scores[tp.key]"
-                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
-                  :class="row.scores[tp.key].is_passed
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-                    : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'"
-                >{{ row.scores[tp.key].label }}</span>
-                <span v-else class="text-gray-400">-</span>
-              </td>
-              <td class="px-4 py-3 font-bold tabular-nums text-gray-900 dark:text-white">{{ row.final_score ?? '-' }}</td>
-            </tr>
-            <tr v-if="!rows.length">
-              <td :colspan="3 + tpColumns.length" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                Belum ada hasil ujian.
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <p v-if="!rows.length" class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        Belum ada hasil ujian.
+      </p>
+      <div v-for="grp in rowsByClass" :key="grp.classroom_name" class="mb-8">
+        <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-2">
+          Kelas {{ grp.classroom_name }}
+          <span class="ml-2 text-xs font-normal text-gray-400">{{ grp.items.length }} siswa</span>
+        </h3>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-200 dark:border-gray-700 text-left text-gray-500 dark:text-gray-400">
+                <th class="px-4 py-3 font-medium">Nama Siswa</th>
+                <th v-for="tp in tpColumns" :key="tp.key" class="px-4 py-3 font-medium whitespace-nowrap">
+                  {{ tp.label }}<span class="block text-xs font-normal text-gray-400">{{ tp.name }}</span>
+                </th>
+                <th class="px-4 py-3 font-medium">Nilai Akhir</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in grp.items" :key="row.result_id" class="border-b border-gray-100 dark:border-gray-700/50">
+                <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ row.student_name }}</td>
+                <td v-for="tp in tpColumns" :key="tp.key" class="px-4 py-3 whitespace-nowrap">
+                  <span
+                    v-if="row.scores[tp.key]"
+                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
+                    :class="row.scores[tp.key].is_passed
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                      : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'"
+                  >{{ row.scores[tp.key].label }}</span>
+                  <span v-else class="text-gray-400">-</span>
+                </td>
+                <td class="px-4 py-3 font-bold tabular-nums text-gray-900 dark:text-white">{{ row.final_score ?? '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- Rekap per kelas: sudah / belum mengerjakan -->
@@ -146,14 +148,29 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import Layout from '../../../Plugins/InertiaLayout.vue'
 
-defineProps({
+const props = defineProps({
   session: Object,
   summary: Object,
   tpColumns: Array,
   rows: Array,
   classes: { type: Array, default: () => [] },
+})
+
+// Kelompokkan baris rekap per kelas (backend sudah urut kelas lalu abjad).
+const rowsByClass = computed(() => {
+  const groups = []
+  for (const row of props.rows) {
+    let g = groups[groups.length - 1]
+    if (!g || g.classroom_name !== row.classroom_name) {
+      g = { classroom_name: row.classroom_name, items: [] }
+      groups.push(g)
+    }
+    g.items.push(row)
+  }
+  return groups
 })
 
 function pct(part, total) {
