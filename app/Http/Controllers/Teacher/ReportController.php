@@ -85,11 +85,13 @@ class ReportController extends Controller
 
         $byStudent = $completed
             ->groupBy(fn (AssessmentResult $r) => $r->student_id)
-            ->sortBy([
+            ->values()
+            ->sort(function (Collection $a, Collection $b) {
                 // urut per kelas, lalu nama abjad di dalam kelas
-                fn (Collection $group) => $group->first()->student?->classroom?->name ?? '~',
-                fn (Collection $group) => $group->first()->student?->name ?? '~',
-            ]);
+                $ca = $a->first()->student?->classroom?->name ?? '~';
+                $cb = $b->first()->student?->classroom?->name ?? '~';
+                return [$ca, $a->first()->student?->name ?? '~'] <=> [$cb, $b->first()->student?->name ?? '~'];
+            });
 
         return $byStudent
             ->map(function (Collection $attempts) {

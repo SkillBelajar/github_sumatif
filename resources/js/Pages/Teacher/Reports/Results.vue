@@ -161,16 +161,18 @@ const props = defineProps({
 
 // Kelompokkan baris rekap per kelas (backend sudah urut kelas lalu abjad).
 const rowsByClass = computed(() => {
-  const groups = []
+  // akumulasi per kelas (tahan walau ada baris kelas sama tak bersebelahan)
+  const map = new Map()
   for (const row of props.rows) {
-    let g = groups[groups.length - 1]
-    if (!g || g.classroom_name !== row.classroom_name) {
-      g = { classroom_name: row.classroom_name, items: [] }
-      groups.push(g)
-    }
-    g.items.push(row)
+    if (!map.has(row.classroom_name)) map.set(row.classroom_name, [])
+    map.get(row.classroom_name).push(row)
   }
-  return groups
+  return [...map.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([classroom_name, items]) => ({
+      classroom_name,
+      items: [...items].sort((x, y) => x.student_name.localeCompare(y.student_name)),
+    }))
 })
 
 function pct(part, total) {
