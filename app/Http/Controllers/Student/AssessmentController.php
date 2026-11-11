@@ -120,6 +120,14 @@ class AssessmentController extends Controller
             'status' => 'in_progress',
         ])->first();
 
+        // PENYELAMATAN: percobaan tersangkut yang waktunya sudah habis
+        // (tutup tab / matikan perangkat) -> kunci otomatis dengan nilai,
+        // lalu siswa dapat percobaan baru. Tidak ada lagi error stuck.
+        if (!is_null($result) && $result->start_time->copy()->addMinutes($assessmentSession->duration_minutes)->isPast()) {
+            $this->finishExpired($result);
+            $result = null; // paksa buat percobaan baru di bawah
+        }
+
         if (is_null($result)) {
             $latest = AssessmentResult::where([
                 'assessment_session_id' => $assessmentSession->id,
@@ -181,7 +189,18 @@ class AssessmentController extends Controller
             'student_id' => ['required', 'integer', Rule::exists('students', 'id')],
         ]);
 
-        $result = $this->activeResult($assessmentSession, $validated['student_id']);
+        // submit menilai percobaan yang sedang berjalan apa adanya, sekalipun
+        // waktunya sudah lewat (mis. siswa menutup tab lalu buka lagi lalu submit).
+        // Tidak membuat percobaan baru di sini — cukup kunci & nilai.
+        $result = AssessmentResult::where([
+            'assessment_session_id' => $assessmentSession->id,
+            'student_id' => $validated['student_id'],
+            'status' => 'in_progress',
+        ])->first();
+
+        if (is_null($result)) {
+            abort(409, 'Tidak ada percobaan ujian yang sedang berjalan untuk dikumpulkan.');
+        }
 
         DB::transaction(function () use ($result, $assessmentSession) {
             $result->load('answers.question.learningObjective:id,name');
@@ -321,6 +340,32 @@ class AssessmentController extends Controller
         abort_if($result->start_time->copy()->addMinutes($session->duration_minutes)->isPast(), 410, 'Waktu ujian sudah habis.');
 
         return $result;
+    }
+
+    /**
+     * Koreksi otomatis percobaan yang kedaluwarsa: pakai logika grading yang
+     * sama dengan submit() supaya format skor identik. Jawaban tak terjawab
+     * dianggap salah (bukan error), lalu siswa dapat percobaan baru.
+     */
+    private function finishExpired(AssessmentResult $result): void
+    {
+        $result->load('answers.question.learningObjective:id,name');
+        $gradable = [Question::TYPE_MC, Question::TYPE_TF];
+
+        foreach ($result->answers as $answer) {
+            $question = $answer->question;
+            $isCorrect = null;
+            if ($question && in_array($question->type, $gradable, true)) {
+                $isCorrect = trim((string) $answer->student_answer) === trim((string) $question->correct_answer);
+            }
+            $answer->update(['is_correct' => $isCorrect]);
+        }
+
+        $result->update([
+            'status' => 'completed',
+            'end_time' => now(),
+            'scores_per_tp' => $this->scoresPerTp($result),
+        ]);
     }
 
     /** Percobaan terbaru siswa pada suatu sesi. */
